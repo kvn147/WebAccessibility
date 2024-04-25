@@ -45,4 +45,10 @@ public class WebTest {
         // ASLint: notfound
     }
 
+    public static void test(category, description, googleResult, waveResult, sortSiteResult, asLintResult) {
+        System.out.println("Hello");
+    }
+
+
+
 }
