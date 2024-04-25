@@ -3,11 +3,13 @@ import java.util.*;
 public class WebTest {
     private String category;
     private String description;
+    // four web checkers
     private String googleResult;
     private String waveResult;
     private String sortSiteResult;
     private String asLintResult;
 
+    // Getter Method
     public String getCategory() {
         return category;
     }
