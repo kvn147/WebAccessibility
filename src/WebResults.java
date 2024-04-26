@@ -65,10 +65,18 @@ public class WebResults {
         System.out.println("Total tests matching: " + testMatches);
     }
 
+    public void showAll() {
+        for (String test : tests) {
+            System.out.println(test);
+        }
+    }
+
     public static void main(String[] args) {
         WebResults results = new WebResults("data/CheckersResults.txt");
-        System.out.println("Number of tests: " + results.numTests());
-        results.showTestResults("colour");
+
+        results.showAll();
+//        System.out.println("Number of tests: " + results.numTests());
+//        results.showTestResults("colour");
     }
 }
 
