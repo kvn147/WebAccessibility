@@ -11,30 +11,22 @@ import java.io.*;
  */
 
 public class WebResults {
-    private Set<WebTest> tests;
+    private Set<String> tests;
     private int testCount = 0;
 
     public WebResults(String filename) {
         tests = new HashSet<>();
-
         read(filename);
-    }
-
-    public Set<WebTest> getTests() {
-        return tests;
     }
 
     private void read(String fileName) {
         try (Scanner input = new Scanner(new File(fileName))) {
-
-
             while (input.hasNextLine()) {
                 String line = input.nextLine();
                 String[] data = line.split(" ", 6);
                 if (data.length == 6) {
-                    WebTest test = new WebTest(data[0], data[1], data[2], data[3],
-                            data[4], data[5]);
-                    tests.add(test);
+                    String testString = String.join(" ", data); // Store data as a single string
+                    tests.add(testString);
                     testCount++;
                 }
             }
@@ -43,14 +35,29 @@ public class WebResults {
         }
     }
 
-    public int numTests(){
+    public int numTests() {
         return testCount;
+    }
+
+    public int numPass(String checker, String category) {
+        int passCount = 0;
+        String checkerLower = checker.toLowerCase();
+        String categoryLower = category.toLowerCase();
+        for (String test : tests) {
+            if (test.toLowerCase().contains(checkerLower) && test.toLowerCase().contains(categoryLower)) {
+                if (test.toLowerCase().contains("error") || test.toLowerCase().contains("error_paid")) {
+                    passCount++;
+                }
+            }
+        }
+        return passCount;
     }
 
     public void showTestResults(String detail) {
         int testMatches = 0;
-        for (WebTest test : this.tests) {
-            if (test.containsDetail(detail)) {
+        String detailLower = detail.toLowerCase();
+        for (String test : tests) {
+            if (test.toLowerCase().contains(detailLower)) {
                 System.out.println(test);
                 testMatches++;
             }
@@ -58,41 +65,10 @@ public class WebResults {
         System.out.println("Total tests matching: " + testMatches);
     }
 
-    public void showByCategory(String detail) {
-        int categoryMatches = 0;
-        for (WebTest test : this.tests) {
-            if (test.containsCategory(detail)) {
-                System.out.println(test);
-                categoryMatches++;
-            }
-        }
-        System.out.println("Total tests in category: " + categoryMatches);
-    }
-
-    public void showAllFailed() {
-        int failMatches = 0;
-        for (WebTest test : this.tests) {
-            if (test.containsDetail("notfound")) {
-                System.out.println(test);
-                failMatches++;
-            }
-        }
-        System.out.println("Total tests failed: " + failMatches);
-    }
-
     public static void main(String[] args) {
         WebResults results = new WebResults("data/CheckersResults.txt");
-
-//        for (WebTest test : results.getTests()) {
-//            System.out.println(test);
-//        }
-//
-//        results.showTestResults("colour");
-
-        results.showByCategory("Key");
-
-//        results.showAllFailed();
-
+        System.out.println("Number of tests: " + results.numTests());
+        results.showTestResults("colour");
     }
 }
 
