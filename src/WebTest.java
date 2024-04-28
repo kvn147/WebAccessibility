@@ -53,21 +53,6 @@ public class WebTest {
         return asLintResult;
     }
 
-    public boolean containsDetail(String detail) {
-        String lowerDetail = detail.toLowerCase();
-        return category.toLowerCase().contains(lowerDetail) ||
-                description.toLowerCase().contains(lowerDetail) ||
-                googleResult.toLowerCase().contains(lowerDetail) ||
-                waveResult.toLowerCase().contains(lowerDetail) ||
-                sortSiteResult.toLowerCase().contains(lowerDetail) ||
-                asLintResult.toLowerCase().contains(lowerDetail);
-    }
-
-    public boolean containsCategory(String detail) {
-        String lowerDetail = detail.toLowerCase();
-        return category.toLowerCase().contains(lowerDetail);
-    }
-
     @Override
     public String toString() {
         return category + ": " + description + " Google: " + googleResult +
