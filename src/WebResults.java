@@ -39,20 +39,6 @@ public class WebResults {
         return testCount;
     }
 
-    public int numPass(String checker, String category) {
-        int passCount = 0;
-        String checkerLower = checker.toLowerCase();
-        String categoryLower = category.toLowerCase();
-        for (String test : tests) {
-            if (test.toLowerCase().contains(checkerLower) && test.toLowerCase().contains(categoryLower)) {
-                if (test.toLowerCase().contains("error") || test.toLowerCase().contains("error_paid")) {
-                    passCount++;
-                }
-            }
-        }
-        return passCount;
-    }
-
     public void showTestResults(String detail) {
         int testMatches = 0;
         String detailLower = detail.toLowerCase();
@@ -65,6 +51,39 @@ public class WebResults {
         System.out.println("Total tests matching: " + testMatches);
     }
 
+    public void showByCategory(String category) {
+        int categoryMatches = 0;
+        String categoryLower = category.toLowerCase();
+        for (String test : tests) {
+            if (test.toLowerCase().contains(categoryLower)) {
+                System.out.println(test);
+                categoryMatches++;
+            }
+        }
+    }
+
+    public void showAllFailed() {
+        int failCount = 0;
+        for (String test : tests) {
+            if (test.toLowerCase().contains("notfound")) {
+                System.out.println(test);
+                failCount++;
+            }
+        }
+    }
+
+    public int numPass(String checker, String category) {
+        int passCount = 0;
+        String checkerLower = checker.toLowerCase();
+        String categoryLower = category.toLowerCase();
+        for (String test : tests) {
+            if (test.toLowerCase().contains("error") || test.toLowerCase().contains("error_paid")) {
+                passCount++;    
+                }
+            }    
+        return passCount;
+    }
+
     public void showAll() {
         for (String test : tests) {
             System.out.println(test);
@@ -74,7 +93,8 @@ public class WebResults {
     public static void main(String[] args) {
         WebResults results = new WebResults("data/CheckersResults.txt");
 
-        results.showAll();
+        System.out.println(results.numPass("Goog", ""));
+//        results.showAll();
 //        System.out.println("Number of tests: " + results.numTests());
 //        results.showTestResults("colour");
     }
