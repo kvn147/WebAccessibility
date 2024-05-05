@@ -11,22 +11,51 @@ import java.io.*;
  */
 
 public class WebResults {
-    private Set<String> tests;
+    private Set<WebTest> tests;
     private int testCount = 0;
 
+    /**
+     * Constructs a WebResults object called tests that is a Hash Set and reads from a file.
+     *
+     * @param filename The file name it will read
+     */
     public WebResults(String filename) {
         tests = new HashSet<>();
         read(filename);
     }
 
+    /**
+     * Splits the file by web test, and splits each web test's category, description,
+     * and its web checker results. Then stores it in tests.
+     *
+     * @param fileName The file name it will read and split the web tests
+     */
     private void read(String fileName) {
         try (Scanner input = new Scanner(new File(fileName))) {
+
             while (input.hasNextLine()) {
                 String line = input.nextLine();
                 String[] data = line.split(" ", 6);
+
                 if (data.length == 6) {
-                    String testString = String.join(" ", data); // Store data as a single string
-                    tests.add(testString);
+                    String category = data[0];
+                    String googleResult = data[1];
+                    String waveResult = data[2];
+                    String sortSiteResult = data[3];
+                    String asLintResult = data[4];
+
+                    // StringBuilder for the special case of description
+                    StringBuilder descriptionBuilder = new StringBuilder();
+                    for (int i = 5; i < data.length; i++) {
+                        descriptionBuilder.append(data[i]);
+                        if (i < data.length - 1) {
+                            descriptionBuilder.append(" "); // Add space between words
+                        }
+                    }
+                    String description = descriptionBuilder.toString();
+
+                    tests.add(new WebTest(category, googleResult, waveResult, sortSiteResult,
+                            asLintResult, description));
                     testCount++;
                 }
             }
@@ -35,15 +64,29 @@ public class WebResults {
         }
     }
 
+    /**
+     * Retrieves the number of web tests.
+     *
+     * @return the number of web tests in file.
+     */
     public int numTests() {
         return testCount;
     }
 
+    /**
+     * Counts the web tests that match the specified details or description.
+     *
+     * @param detail is the details or description to match.
+     */
     public void showTestResults(String detail) {
         int testMatches = 0;
         String detailLower = detail.toLowerCase();
-        for (String test : tests) {
-            if (test.toLowerCase().contains(detailLower)) {
+
+        for (WebTest test : tests) {
+            String testDescription = test.getDescription().toLowerCase();
+            String testCategory = test.getCategory().toLowerCase();
+
+            if (testDescription.contains(detailLower)) {
                 System.out.println(test);
                 testMatches++;
             }
@@ -51,41 +94,102 @@ public class WebResults {
         System.out.println("Total tests matching: " + testMatches);
     }
 
+    /**
+     * Counts the number of web tests that match the specified category.
+     *
+     * @param category is the category to match.
+     */
     public void showByCategory(String category) {
         int categoryMatches = 0;
         String categoryLower = category.toLowerCase();
-        for (String test : tests) {
-            if (test.toLowerCase().contains(categoryLower)) {
+
+        for (WebTest test : tests) {
+            String testCategory = test.getCategory().toLowerCase();
+
+            if (testCategory.contains(categoryLower)) {
                 System.out.println(test);
                 categoryMatches++;
             }
         }
+        System.out.println();
+        System.out.println("Total tests in category: " + categoryMatches);
     }
 
+    /**
+     * Prints the number of web tests that have all their web checker results as "notfound"
+     */
     public void showAllFailed() {
         int failCount = 0;
-        for (String test : tests) {
-            if (test.toLowerCase().contains("notfound")) {
-                System.out.println(test);
+
+        for (WebTest test : tests) {
+            if (Objects.equals(test.getGoogleResult(), "notfound") &&
+                    Objects.equals(test.getWaveResult(), "notfound") &&
+                    Objects.equals(test.getSortSiteResult(), "notfound") &&
+                    Objects.equals(test.getAsLintResult(), "notfound")) {
                 failCount++;
+                System.out.println(test);
             }
-        }
+
+
+            }
+        System.out.println(failCount);
     }
 
+    /**
+     * Counts the number of web checker results that are error or error_plaid given the
+     * specified web checker and specified category it is looking at.
+     *
+     * @param checker is the web checker such as Google Result that is checked.
+     * @param category is the category that is checked.
+     * @return the number of web tests that had the web checker result be error or error_plaid.
+     */
     public int numPass(String checker, String category) {
         int passCount = 0;
+
+        final String GOOGLE = "google result";
+        final String WAVE = "wave result";
+        final String SORT = "sortsite result";
+        final String ASLINT = "aslint result";
+
+        // Convert checker and category to lowercase for case insensitivity
         String checkerLower = checker.toLowerCase();
         String categoryLower = category.toLowerCase();
-        for (String test : tests) {
-            if (test.toLowerCase().contains("error") || test.toLowerCase().contains("error_paid")) {
-                passCount++;    
+
+        for (WebTest test : tests) {
+            String testCategory = test.getCategory().toLowerCase();
+
+            if (testCategory.contains(categoryLower)) {
+                if (GOOGLE.contains(checkerLower) &&
+                        (test.getGoogleResult().equalsIgnoreCase("error") ||
+                                test.getGoogleResult().equalsIgnoreCase("error_plaid"))) {
+                    passCount++;
                 }
-            }    
+                else if (WAVE.contains(checkerLower) && (test.getWaveResult().equalsIgnoreCase("error") ||
+                        test.getWaveResult().equalsIgnoreCase("error_plaid"))) {
+
+                    passCount++;
+                }
+                else if (SORT.contains(checkerLower) && (test.getSortSiteResult().equalsIgnoreCase("error") ||
+                        test.getSortSiteResult().equalsIgnoreCase("error_plaid"))) {
+
+                    passCount++;
+                }
+
+                else if (ASLINT.contains(checkerLower) && (test.getAsLintResult().equalsIgnoreCase("error") ||
+                        test.getAsLintResult().equalsIgnoreCase("error_plaid"))) {
+
+                    passCount++;
+                }
+            }
+        }
         return passCount;
     }
 
+    /**
+     * Prints all tests in the web test set.
+     */
     public void showAll() {
-        for (String test : tests) {
+        for (WebTest test : tests) {
             System.out.println(test);
         }
     }
@@ -93,30 +197,16 @@ public class WebResults {
     public static void main(String[] args) {
         WebResults results = new WebResults("data/CheckersResults.txt");
 
-        System.out.println(results.numPass("Goog", ""));
 //        results.showAll();
 //        System.out.println("Number of tests: " + results.numTests());
-//        results.showTestResults("colour");
+//        results.showTestResults("Colour");
+//     results.showByCategory("key");
+//        results.showAllFailed();
+        System.out.println(results.numPass("lint", "htm"));
     }
 }
 
 /**
  * Output:
- * Keyboard: Dropdown navigation - only the top level items receive focus Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Keyboard trap Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Keyboard focus assigned to a non focusable element using tabindex=0 Google: notfound WAVE: manual SortSite: notfound ASLint: notfound
- * Keyboard: Lightbox - ESC key doesn't close the lightbox Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Link with a role=button does not work with space bar Google: notfound WAVE: notfound SortSite: notfound ASLint: error
- * Keyboard: Keyboard focus is not indicated visually Google: notfound WAVE: notfound SortSite: error ASLint: error
- * Keyboard: Lightbox - focus is not moved immediately to lightbox Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Alert shows for a short time Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Accesskey attribute used Google: notfound WAVE: warning SortSite: notfound ASLint: notfound
- * Keyboard: Lightbox - focus is not retained within the lightbox Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Concertina items don't get keyboard focus Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Focus order in wrong order Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Lightbox - close button doesn't receive focus Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Tabindex greater than 0 Google: error WAVE: warning SortSite: notfound ASLint: warning
- * Keyboard: Tooltips don't receive keyboard focus Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Keyboard: Fake button is not keyboard accessible Google: notfound WAVE: notfound SortSite: notfound ASLint: notfound
- * Total tests in category: 16
+ * 2
  */
